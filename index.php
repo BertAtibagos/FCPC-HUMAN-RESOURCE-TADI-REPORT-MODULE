@@ -30,20 +30,20 @@
                 </select>
             </div>
 
-            <div class="col-md name-search shadow hide">
-                <input type="text" class="form-control" placeholder="Name">
+            <div class="col-md name-search hide">
+                <input type="text" class="form-control shadow" placeholder="Name">
             </div>
 
-            <div class="col-md dept-select shadow hide">
-                <select class="form-select">
-                    <option value="cams">CAMS</option>
-                    <option value="cas">CAS</option>
-                    <option value="ccs">CCS</option>
-                    <option value="ccj">CCJ</option>
-                    <option value="ce">CE</option>
-                    <option value="coa">COA</option>
-                    <option value="cobm">COBM</option>
-                    <option value="coed">COED</option>
+            <div class="col-md dept-select hide">
+                <select class="form-select shadow">
+                    <option value="cams">College of Allied Medical Science</option>
+                    <option value="cas">College of Arts and Sciences</option>
+                    <option value="ccs">College of Computer Science</option>
+                    <option value="ccj">College og Criminal Justice</option>
+                    <option value="ce">Colloge of Engineering</option>
+                    <option value="coa">College of Accountancy</option>
+                    <option value="cobm">College of Business Management</option>
+                    <option value="coed">College of Education</option>
                 </select>
             </div>
 
@@ -55,7 +55,17 @@
         </div>
     </div>
     <div class="card mx-auto p-3 report-view">
-        
+        <div class="row">
+            <div class="card col-md m-3 border border-success stats">
+                tang
+            </div>
+            <div class="card col-md m-3 border border-danger stats">
+                ina
+            </div>
+            <div class="card col-md m-3 border border-secondary stats">
+                mo
+            </div>
+        </div>
     </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
