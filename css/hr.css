@@ -13,3 +13,12 @@
 .stats{
     text-align:center;
 }
+.verified{
+    background-color: #ddffef;
+}
+.unverified{
+    background-color: #fff1f2;
+}
+.total-rec{
+    background-color: #c9c9c9;
+}
