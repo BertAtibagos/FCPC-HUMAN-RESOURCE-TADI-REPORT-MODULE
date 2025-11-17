@@ -39,8 +39,8 @@
                     <option value="cams">College of Allied Medical Science</option>
                     <option value="cas">College of Arts and Sciences</option>
                     <option value="ccs">College of Computer Science</option>
-                    <option value="ccj">College og Criminal Justice</option>
-                    <option value="ce">Colloge of Engineering</option>
+                    <option value="ccj">College of Criminal Justice</option>
+                    <option value="ce">College of Engineering</option>
                     <option value="coa">College of Accountancy</option>
                     <option value="cobm">College of Business Management</option>
                     <option value="coed">College of Education</option>
@@ -56,17 +56,20 @@
     </div>
     <div class="card mx-auto p-3 report-view">
         <div class="row">
-            <div class="card col-md m-3 border border-success stats">
-                tang
+            <div class="card col-md m-3 border border-success border-3 text-success stats verified">
+                <h6>Total Verified</h6>
+                <h3 id="verified">0</h3>
             </div>
-            <div class="card col-md m-3 border border-danger stats">
-                ina
+            <div class="card col-md m-3 border border-danger border-3 text-danger stats unverified">
+                <h6>Total Unverified</h6>
+                <h3 id="unverified">0</h3>
             </div>
-            <div class="card col-md m-3 border border-secondary stats">
-                mo
+            <div class="card col-md m-3 border border-secondary border-3 text-dark stats total-rec">
+                <h6>Total Records</h6>
+                <h3 id="total">0</h3>
             </div>
         </div>
     </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-<script src="view/index-function.js?t=<?php echo time(); ?>"></script>
+<script src="view/index-script.js?t=<?php echo time(); ?>"></script>
