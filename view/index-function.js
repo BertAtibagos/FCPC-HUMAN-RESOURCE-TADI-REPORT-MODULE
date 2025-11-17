@@ -1,30 +1,10 @@
-document.getElementById('perCutoffByDate').addEventListener('change', (e)=>{
-    const selectValue = e.target.value;
+async function totalStats(){
+    try{
+        const request = await fetch(``)
 
-    if(selectValue == "date"){
-        document.querySelectorAll('.date-search').forEach(select =>{
-            select.classList.remove('hide');
-        })
-    }else{
-        document.querySelectorAll('.date-search').forEach(select =>{
-            select.classList.add('hide');
-        })
+        const result = await request.json();
     }
-})
-
-document.getElementById('byAllNameDept').addEventListener('change', (e)=>{
-    const selectValue = e.target.value;
-
-    if(selectValue == "byName"){
-        document.querySelector('.name-search').classList.remove('hide');
-        document.querySelector('.dept-select').classList.add('hide');
+    catch(error){
+        console.log("ERROR: ", error)
     }
-    else if(selectValue == "byDept"){
-        document.querySelector('.dept-select').classList.remove('hide');
-        document.querySelector('.name-search').classList.add('hide');
-    }
-    else{
-        document.querySelector('.name-search').classList.add('hide');
-        document.querySelector('.dept-select').classList.add('hide');
-    }
-})
+}
