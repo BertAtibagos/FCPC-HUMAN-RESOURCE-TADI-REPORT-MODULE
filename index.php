@@ -48,7 +48,7 @@
             </div>
 
             <div class="col-md text-end">
-                <button id="generateBtn" class="btn btn-primary px-4 shadow">
+                <button id="generateBtn" class="btn px-4 shadow text-white gen-rep">
                     Generate Report
                 </button>   
             </div>
@@ -56,20 +56,37 @@
     </div>
     <div class="card mx-auto p-3 report-view">
         <div class="row">
-            <div class="card col-md m-3 border border-success border-3 text-success stats verified">
+            <div class="card col-md m-3 shadow stats verified">
                 <h6>Total Verified</h6>
                 <h3 id="verified">0</h3>
             </div>
-            <div class="card col-md m-3 border border-danger border-3 text-danger stats unverified">
+            <div class="card col-md m-3 shadow stats unverified">
                 <h6>Total Unverified</h6>
                 <h3 id="unverified">0</h3>
             </div>
-            <div class="card col-md m-3 border border-secondary border-3 text-dark stats total-rec">
+            <div class="card col-md m-3 shadow text-dark stats total-rec">
                 <h6>Total Records</h6>
                 <h3 id="total">0</h3>
             </div>
         </div>
+
+        <div class="row">
+            <div class="card col border shadow p-3 m-1 chart-container">
+                <canvas id="totalChart"></canvas>
+            </div>
+            <div class="card col border shadow p-3 m-1 chart-container">
+                <canvas id="monthlyTotalChart"></canvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="card col border shadow p-3 m-1 chart-container">
+                <canvas id="perCutOffChart"></canvas>
+            </div>
+        </div>
     </div>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+<script src="view/index-function.js?t=<?php echo time(); ?>"></script>
 <script src="view/index-script.js?t=<?php echo time(); ?>"></script>
+
