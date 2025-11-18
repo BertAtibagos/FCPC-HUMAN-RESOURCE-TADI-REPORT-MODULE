@@ -9,15 +9,22 @@
 }
 .report-view{
     width: 197vh;
+    overflow-y: auto;
+    max-height: 90vh;
 }
 .stats{
     text-align:center;
 }
+.gen-rep{
+    background-color: #032a74;
+}
 .verified{
-    background-color: #ddffef;
+    background-color: #9bbdff70;
+    color:#032a74;
 }
 .unverified{
-    background-color: #fff1f2;
+    background-color: #ff970678;
+    color:#a96200;
 }
 .total-rec{
     background-color: #c9c9c9;
