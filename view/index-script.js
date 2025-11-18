@@ -28,3 +28,7 @@ document.getElementById('byAllNameDept').addEventListener('change', (e)=>{
         document.querySelector('.dept-select').classList.add('hide');
     }
 })
+
+totalStats();
+fetchMonthlyTotal();
+fetchPerCutOffTotal();
