@@ -29,3 +29,19 @@
 .total-rec{
     background-color: #c9c9c9;
 }
+.chart-container1 {
+    max-width: 350px;  
+    height: 300px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.chart-container2 {
+    /* max-width: 500px;   */
+    height: 400px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
