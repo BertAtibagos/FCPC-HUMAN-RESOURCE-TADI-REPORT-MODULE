@@ -137,13 +137,47 @@ if($type == 'GET_ALL_PROG_TOTAL'){
 
 if($type == 'GET_TADI_DETAILS_BY_CUTOFF'){
     
-    $cutoff = isset($_POST['cutoff']) ? $_POST['cutoff'] : 'previous'; // 'current' or 'previous'
-    $schlAcadLvl_ID = isset($_POST['level']) ? $_POST['level'] : 2;
-    $schlAcadYr_ID = isset($_POST['year']) ? $_POST['year'] : 19;
-    $schlAcadPrd_ID = isset($_POST['period']) ? $_POST['period'] : 5;
-    $schlAcadYrLvl_ID = isset($_POST['year_level']) ? $_POST['year_level'] : 6;
+    $rangeType = $_POST['rangeType'];
+    $filterType = $_POST['filterType'];
 
-    // Calculate current and previous cut-off dates
+    $queryFilter = "";
+    $binding = "";
+
+    if($rangeType == 'byDate'){
+        if($filterType == 'deptName_all'){
+            $startDate = $_POST['startDate'];
+            $endDate = $_POST['endDate'];
+
+            $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?";
+
+            $values = [$startDate, $endDate];
+            $bind = "ss";
+        }else if($filterType == 'name_Search'){
+            $startDate = $_POST['startDate'];
+            $endDate = $_POST['endDate'];
+            $name = $_POST['name'];
+            $bindName = "%". $name . "%";
+
+            $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?
+            AND CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) LIKE ?";
+
+            $values = [$startDate, $endDate, $bindName];
+            $bind = "sss";
+        }
+        else if($filterType == 'dept_Search'){
+            $startDate = $_POST['startDate'];
+            $endDate = $_POST['endDate'];
+            $dept = $_POST['dept'];
+
+            $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?
+            AND CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) LIKE ?";
+            
+            $values = [$startDate, $endDate, $dept];
+            $bind = "ssi";//unfinished
+        }
+    }
+
+     // Calculate current and previous cut-off dates
     $today = date('Y-m-d');
     $current_day = date('d');
     $current_month = date('m');
@@ -167,12 +201,64 @@ if($type == 'GET_TADI_DETAILS_BY_CUTOFF'){
         $prev_cutoff_end = date('Y-m-15');
     }
 
-    if ($cutoff == 'previous') {
-        $date_start = $prev_cutoff_start;
-        $date_end = $prev_cutoff_end;
-    } else {
+    if($rangeType == 'currCutOff'){
         $date_start = $current_cutoff_start;
         $date_end = $current_cutoff_end;
+        
+        if($filterType == 'deptName_all'){
+            $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?";
+
+            $values = [$date_start, $date_end];
+            $bind = "ss";
+        }else if($filterType == 'name_Search'){
+            $name = $_POST['name'];
+            $bindName = "%". $name . "%";
+
+            $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?
+            AND CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) LIKE ?";
+
+            $values = [$date_start, $date_end, $bindName];
+            $bind = "sss";
+        }
+        else if($filterType == 'dept_Search'){
+            $dept = $_POST['dept'];
+
+            $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?
+            AND CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) LIKE ?";
+            
+            $values = [$date_start, $date_end, $dept];
+            $bind = "sss";//unfinished
+        }
+    }
+
+    if($rangeType == 'prevCutOff'){
+        $date_start = $prev_cutoff_start;
+        $date_end = $prev_cutoff_end;
+
+        if($filterType == 'deptName_all'){
+            $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?";
+
+            $values = [$date_start, $date_end];
+            $bind = "ss";
+        }else if($filterType == 'name_Search'){
+            $name = $_POST['name'];
+            $bindName = "%". $name . "%";
+
+            $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?
+            AND CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) LIKE ?";
+
+            $values = [$date_start, $date_end, $bindName];
+            $bind = "sss";
+        }
+        else if($filterType == 'dept_Search'){
+            $dept = $_POST['dept'];
+
+            $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?
+            AND CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) LIKE ?";
+
+            $values = [$date_start, $date_end, $dept];
+            $bind = "sss"; //unfinished
+        }
     }
 
     $qry = "SELECT  
@@ -210,11 +296,7 @@ if($type == 'GET_TADI_DETAILS_BY_CUTOFF'){
 			LEFT JOIN schoolemployee emp
 				ON tadi.`schlprof_id` = emp.`SchlEmpSms_ID`
 
-			WHERE off.`SchlAcadLvl_ID` = ?
-			AND off.`SchlAcadYr_ID` = ?
-			AND off.`SchlAcadPrd_ID` = ?
-			AND off.`SchlAcadYrLvl_ID` = ?
-            AND tadi.schltadi_date BETWEEN ? AND ?
+            $queryFilter
             ORDER BY 
                 emp.SchlEmp_LNAME, 
                 subj.SchlAcadSubj_CODE,
@@ -222,7 +304,7 @@ if($type == 'GET_TADI_DETAILS_BY_CUTOFF'){
                 tadi.schltadi_timein";
 
     $stmt = $dbPortal->prepare($qry);
-    $stmt->bind_param("iiiiss", $schlAcadLvl_ID, $schlAcadYr_ID, $schlAcadPrd_ID, $schlAcadYrLvl_ID, $date_start, $date_end);
+    $stmt->bind_param($bind, ...$values);
     $stmt->execute();
     $result = $stmt->get_result();
     $fetch = $result->fetch_all(MYSQLI_ASSOC);
