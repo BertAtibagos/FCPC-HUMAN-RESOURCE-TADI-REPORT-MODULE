@@ -164,3 +164,225 @@ function vertBarChartPerDeptBuilder(result){
         }
     });
 }
+
+function reportView(result){
+    const reportCard = document.getElementById('reportView'); 
+    const srchBtn = document.getElementById('generateBtn');
+    srchBtn.disabled = false;
+    reportCard.innerHTML = '';
+
+    // Clear existing report content if any
+    let reportTable = document.getElementById('reportTable');
+    if(reportTable) reportTable.remove();
+    let exportContainer = document.getElementById('exportContainer');
+    if(exportContainer) exportContainer.remove();
+    let reportSummary = document.getElementById('reportSummary');
+    if(reportSummary) reportSummary.remove();
+
+    // Group records by teacher and then by subject
+    const teacherGroups = {};
+    let totalTeachers = 0;
+    let totalSessions = 0;
+    let verifiedSessions = 0;
+
+    result.forEach(data => {
+        const profId = data.prof_name || 'Unknown';
+        const subjectKey = data.subject_code || 'Unknown';
+
+        if (!teacherGroups[profId]) {
+            teacherGroups[profId] = {
+                prof_name: data.prof_name,
+                subjects: {}
+            };
+            totalTeachers++;
+        }
+
+        if (!teacherGroups[profId].subjects[subjectKey]) {
+            teacherGroups[profId].subjects[subjectKey] = {
+                subject_code: data.subject_code,
+                subject_desc: data.subject_desc,
+                section_name: data.section_name,
+                sessions: []
+            };
+        }
+
+        teacherGroups[profId].subjects[subjectKey].sessions.push({
+            date: data.tadi_date,
+            time_in: formatTime(data.time_in),
+            time_out: formatTime(data.time_out),
+            duration: data.duration,
+            mode: (data.mode || '-').replace(/_/g, ' '),
+            type: data.type,
+            stud_name: data.student_name,
+            activity: data.activity,
+            status: data.status
+        });
+
+        totalSessions++;
+        if(data.status == 1) verifiedSessions++;
+    });
+
+    const stats = {
+        totalTeachers: totalTeachers,
+        totalSessions: totalSessions,
+        verifiedSessions: verifiedSessions
+    };
+
+    // Create report summary
+    const summaryDiv = document.createElement('div');
+    summaryDiv.id = 'reportSummary';
+    summaryDiv.innerHTML = `
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Report Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 text-center">
+                            <h6>Total Teachers</h6>
+                            <h3>${stats.totalTeachers}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 text-center">
+                            <h6>Total Sessions</h6>
+                            <h3>${stats.totalSessions}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 text-center">
+                            <h6>Verification Rate</h6>
+                            <h3>${stats.totalSessions > 0 ? Math.round((stats.verifiedSessions / stats.totalSessions) * 100) : 0}%</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    reportCard.appendChild(summaryDiv);
+
+    // Create export button
+    const exportDiv = document.createElement('div');
+    exportDiv.id = 'exportContainer';
+    exportDiv.className = 'mb-3';
+    
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'btn btn-success';
+    exportBtn.textContent = 'Export to CSV';
+    exportBtn.addEventListener('click', () => exportTableToCSV('reportTable', 'tadi_report.csv'));
+    
+    exportDiv.appendChild(exportBtn);
+    reportCard.appendChild(exportDiv);
+
+    // Create teacher cards
+    Object.entries(teacherGroups).sort().forEach(([profId, teacher]) => {
+        const teacherCard = document.createElement('div');
+        teacherCard.className = 'card mb-4';
+        
+        const totalSessions = Object.values(teacher.subjects).reduce((sum, subj) => sum + subj.sessions.length, 0);
+        
+        teacherCard.innerHTML = `
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">${teacher.prof_name}</h5>
+                <span class="badge bg-light text-dark">${totalSessions} sessions</span>
+            </div>
+            <div class="card-body">
+                ${Object.values(teacher.subjects).map((subject, idx) => `
+                    <div class="mb-4" ${idx > 0 ? 'style="border-top: 1px solid #dee2e6; padding-top: 1rem;"' : ''}>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0"><strong>${subject.subject_code}</strong> - ${subject.subject_desc}</h6>
+                            <span class="badge bg-primary">${subject.section_name || 'No Section'}</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Time In</th>
+                                        <th>Time Out</th>
+                                        <th>Duration</th>
+                                        <th>Mode</th>
+                                        <th>Type</th>
+                                        <th>Activity</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${subject.sessions.map(session => `
+                                        <tr>
+                                            <td>${session.date}</td>
+                                            <td>${session.time_in}</td>
+                                            <td>${session.time_out}</td>
+                                            <td>${session.duration}</td>
+                                            <td>${session.mode}</td>
+                                            <td>${session.type || '-'}</td>
+                                            <td>${session.activity || '-'}</td>
+                                            <td>
+                                                <span class="badge ${session.status == 1 ? 'bg-success' : 'bg-warning'}">
+                                                    ${session.status == 1 ? 'Verified' : 'Unverified'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        reportCard.appendChild(teacherCard);
+    });
+
+    // Add hidden table for CSV export
+    const hiddenTable = document.createElement('table');
+    hiddenTable.id = 'reportTable';
+    hiddenTable.style.display = 'none';
+    
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    headerRow.innerHTML = `
+        <th>Teacher</th>
+        <th>Subject Code</th>
+        <th>Subject Description</th>
+        <th>Section</th>
+        <th>Date</th>
+        <th>Time In</th>
+        <th>Time Out</th>
+        <th>Duration</th>
+        <th>Mode</th>
+        <th>Type</th>
+        <th>Activity</th>
+        <th>Status</th>
+    `;
+    thead.appendChild(headerRow);
+    hiddenTable.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    Object.values(teacherGroups).forEach(teacher => {
+        Object.values(teacher.subjects).forEach(subject => {
+            subject.sessions.forEach(session => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${teacher.prof_name}</td>
+                    <td>${subject.subject_code}</td>
+                    <td>${subject.subject_desc}</td>
+                    <td>${subject.section_name || '-'}</td>
+                    <td>${session.date}</td>
+                    <td>${session.time_in}</td>
+                    <td>${session.time_out}</td>
+                    <td>${session.duration}</td>
+                    <td>${session.mode}</td>
+                    <td>${session.type || '-'}</td>
+                    <td>${session.activity || '-'}</td>
+                    <td>${session.status == 1 ? 'Verified' : 'Unverified'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        });
+    });
+    hiddenTable.appendChild(tbody);
+    reportCard.appendChild(hiddenTable);
+}
