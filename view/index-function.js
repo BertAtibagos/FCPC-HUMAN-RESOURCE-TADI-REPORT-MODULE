@@ -1,6 +1,7 @@
-async function totalStats(){
+async function dashBoardContent(){
     try{
-        const request = await fetch(`controller/index-post.php`,{
+
+        const totalStatsRequest = await fetch(`controller/index-post.php`,{
             method: "POST",
             headers: {"Content-Type": "application/x-www-form-urlencoded"},
             body: new URLSearchParams({
@@ -8,22 +9,7 @@ async function totalStats(){
             })
         });
 
-        const result = await request.json();
-
-        document.getElementById("verified").textContent = result.verified;
-        document.getElementById("unverified").textContent = result.unverified;
-        document.getElementById("total").textContent = result.total_rec;
-        // dnutChartBuilder(result);
-    }
-    catch(error){
-        console.log("ERROR: ", error)
-    }
-}
-
-async function fetchMonthlyTotal(){
-
-    try{
-        const request = await fetch(`controller/index-post.php`,{
+        const fetchMonthlyTotalRequest = await fetch(`controller/index-post.php`,{
             method: "POST",
             headers: {"Content-Type": "application/x-www-form-urlencoded"},
             body: new URLSearchParams({
@@ -31,18 +17,15 @@ async function fetchMonthlyTotal(){
             })
         });
 
-        const result = await request.json();
-        barChartMonthlyBuilder(result)
-    }
-    catch(error){
-        console.log("ERROR: ", error)
-    }
-}
+        const fetchDeptTotalRequest = await fetch(`controller/index-post.php`,{
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: new URLSearchParams({
+                type: "GET_ALL_PROG_TOTAL"
+            })
+        });
 
-async function fetchPerCutOffTotal(){
-
-    try{
-        const request = await fetch(`controller/index-post.php`,{
+        const fetchPerCutOffTotalRequest = await fetch(`controller/index-post.php`,{
             method: "POST",
             headers: {"Content-Type": "application/x-www-form-urlencoded"},
             body: new URLSearchParams({
@@ -50,25 +33,22 @@ async function fetchPerCutOffTotal(){
             })
         });
 
-        const result = await request.json();
-        barChartPerCutBuilder(result)
-    }
-    catch(error){
-        console.log("ERROR: ", error)
-    }
-}
+        const totalStatsResult = await totalStatsRequest.json();
+        const fetchMonthlyTotalResult = await fetchMonthlyTotalRequest.json();
+        const fetchPerCutOffTotalResult = await fetchPerCutOffTotalRequest.json();
+        const fetchDeptTotalResult = await fetchDeptTotalRequest.json();
 
-async function fetchDeptTotal(){
-    try{
-        const request = await fetch(`controller/index-post.php`,{
-            method: "POST",
-            headers: {"Content-Type": "application/x-www-form-urlencoded"},
-            body: new URLSearchParams({
-                type: "GET_ALL_PROG_TOTAL"
-            })
-        });
-        const result = await request.json();
-        vertBarChartPerDeptBuilder(result);
+        document.getElementById("verified").textContent = totalStatsResult.verified;
+        document.getElementById("unverified").textContent = totalStatsResult.unverified;
+        document.getElementById("total").textContent = totalStatsResult.total_rec;
+
+        barChartMonthlyBuilder(fetchMonthlyTotalResult);
+
+        barChartPerCutBuilder(fetchPerCutOffTotalResult);
+
+        vertBarChartPerDeptBuilder(fetchDeptTotalResult);
+        document.getElementById('generateBtn').disabled = false;
+
     }
     catch(error){
         console.log("ERROR: ", error)
@@ -83,6 +63,11 @@ async function genReport(){
     const byDateOrByCutOff = document.getElementById('perCutoffByDate').value;
     const byAllOrByNameDept = document.getElementById('byAllNameDept').value;
 
+    let filterRange = '';
+    let dateRange = {startDate: '', endDate: ''};
+    let dept = '';
+    let filterType = '';
+
     const params = new URLSearchParams({
         type: "GET_TADI_DETAILS_BY_CUTOFF"
     });
@@ -91,11 +76,16 @@ async function genReport(){
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
 
+        filterRange = 'date';
+        dateRange.startDate = startDate;
+        dateRange.endDate = endDate;
+
         if(byAllOrByNameDept == 'all'){
             params.append('rangeType', 'byDate');
             params.append('startDate', startDate);
             params.append('endDate', endDate);
             params.append('filterType', 'deptName_all');
+            filterType = 'deptName_all';
         }else if(byAllOrByNameDept == 'byName'){
             const nameSearch = document.getElementById('nameSearch').value;
             params.append('rangeType', 'byDate');
@@ -103,6 +93,7 @@ async function genReport(){
             params.append('startDate', startDate);
             params.append('endDate', endDate);
             params.append('name', nameSearch);
+            filterType = 'byName';
         }else if(byAllOrByNameDept == 'byDept'){
             const deptSelect = document.getElementById('deptSelect').value;
             params.append('rangeType', 'byDate');
@@ -110,40 +101,55 @@ async function genReport(){
             params.append('startDate', startDate);
             params.append('endDate', endDate);
             params.append('dept', deptSelect);
+            dept = deptSelect;
+            filterType = 'byDept';
         }
     }
     
     if(byDateOrByCutOff == 'currCutOff'){
+
+        filterRange = 'currCutOff';
+
         if(byAllOrByNameDept == 'all'){
             params.append('rangeType', 'currCutOff');
             params.append('filterType', 'deptName_all');
+            filterType = 'deptName_all';
         }else if(byAllOrByNameDept == 'byName'){
             const nameSearch = document.getElementById('nameSearch').value;
             params.append('rangeType', 'currCutOff');
             params.append('filterType', 'name_Search');
             params.append('name', nameSearch);
+            filterType = 'byName';
         }else if(byAllOrByNameDept == 'byDept'){
             const deptSelect = document.getElementById('deptSelect').value;
             params.append('rangeType', 'currCutOff');
             params.append('filterType', 'dept_Search');
             params.append('dept', deptSelect);
+            dept = deptSelect;
+            filterType = 'byDept';
         }
     }
     
     if(byDateOrByCutOff == 'prevCutOff'){
+
+        filterRange = 'prevCutOff';
         if(byAllOrByNameDept == 'all'){
             params.append('rangeType', 'prevCutOff');
             params.append('filterType', 'deptName_all');
+            filterType = 'deptName_all';
         }else if(byAllOrByNameDept == 'byName'){
             const nameSearch = document.getElementById('nameSearch').value;
             params.append('rangeType', 'prevCutOff');
             params.append('filterType', 'name_Search');
             params.append('name', nameSearch);
+            filterType = 'byName';
         }else if(byAllOrByNameDept == 'byDept'){
             const deptSelect = document.getElementById('deptSelect').value;
             params.append('rangeType', 'prevCutOff');
             params.append('filterType', 'dept_Search');
             params.append('dept', deptSelect);
+            dept = deptSelect;
+            filterType = 'byDept';
         }
     }
 
@@ -161,7 +167,7 @@ async function genReport(){
         });
 
         const result = await request.json();
-        reportView(result)
+        reportView(result, filterRange, dateRange, dept, filterType);
         
     }
     catch(error){
@@ -229,4 +235,44 @@ function loadingRow() {
         </div>
       </td>
     </tr>`;
+}
+
+function getCutoffDates() {
+    const today = new Date();
+    const current_day = today.getDate();
+    const current_month = String(today.getMonth() + 1).padStart(2, '0');
+    const current_year = today.getFullYear();
+
+    let current_cutoff_start, current_cutoff_end;
+    let prev_cutoff_start, prev_cutoff_end;
+
+    // Determine current cut-off period
+    if (current_day <= 15) {
+        current_cutoff_start = `${current_year}-${current_month}-01`;
+        current_cutoff_end = `${current_year}-${current_month}-15`;
+        
+        // Previous cut-off is 16-end of previous month
+        const prevMonth = new Date(current_year, parseInt(current_month) - 2, 1);
+        const prevMonthStr = String(prevMonth.getMonth() + 1).padStart(2, '0');
+        const prevYear = prevMonth.getFullYear();
+        const lastDayPrevMonth = new Date(prevYear, parseInt(prevMonthStr), 0).getDate();
+        
+        prev_cutoff_start = `${prevYear}-${prevMonthStr}-16`;
+        prev_cutoff_end = `${prevYear}-${prevMonthStr}-${lastDayPrevMonth}`;
+    } else {
+        current_cutoff_start = `${current_year}-${current_month}-16`;
+        const lastDay = new Date(current_year, parseInt(current_month), 0).getDate();
+        current_cutoff_end = `${current_year}-${current_month}-${lastDay}`;
+        
+        // Previous cut-off is 1-15 of current month
+        prev_cutoff_start = `${current_year}-${current_month}-01`;
+        prev_cutoff_end = `${current_year}-${current_month}-15`;
+    }
+
+    return {
+        current_cutoff_start,
+        current_cutoff_end,
+        prev_cutoff_start,
+        prev_cutoff_end
+    };
 }
