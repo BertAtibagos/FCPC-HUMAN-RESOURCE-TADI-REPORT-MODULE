@@ -170,10 +170,10 @@ if($type == 'GET_TADI_DETAILS_BY_CUTOFF'){
             $dept = $_POST['dept'];
 
             $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?
-            AND CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) LIKE ?";
+            AND `dept`.`SchlDept_CODE` = ?";
             
             $values = [$startDate, $endDate, $dept];
-            $bind = "ssi";//unfinished
+            $bind = "sss";
         }
     }
 
@@ -224,10 +224,10 @@ if($type == 'GET_TADI_DETAILS_BY_CUTOFF'){
             $dept = $_POST['dept'];
 
             $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?
-            AND CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) LIKE ?";
+            AND `dept`.`SchlDept_CODE` = ?";
             
             $values = [$date_start, $date_end, $dept];
-            $bind = "sss";//unfinished
+            $bind = "sss";
         }
     }
 
@@ -254,10 +254,10 @@ if($type == 'GET_TADI_DETAILS_BY_CUTOFF'){
             $dept = $_POST['dept'];
 
             $queryFilter = "WHERE tadi.schltadi_date BETWEEN ? AND ?
-            AND CONCAT(emp.`SchlEmp_LNAME`, ', ', emp.`SchlEmp_FNAME`) LIKE ?";
+            AND `dept`.`SchlDept_CODE` = ?";
 
             $values = [$date_start, $date_end, $dept];
-            $bind = "sss"; //unfinished
+            $bind = "sss";
         }
     }
 
