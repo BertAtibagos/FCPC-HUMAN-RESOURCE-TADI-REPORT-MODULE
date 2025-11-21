@@ -165,11 +165,13 @@ function vertBarChartPerDeptBuilder(result){
     });
 }
 
-function reportView(result){
+function reportView(result, filterRange, date, dept, filterType){
     const reportCard = document.getElementById('reportView'); 
     const srchBtn = document.getElementById('generateBtn');
     srchBtn.disabled = false;
     reportCard.innerHTML = '';
+    const timeFormat = getCutoffDates();
+    let fileName = '';
 
     // Clear existing report content if any
     let reportTable = document.getElementById('reportTable');
@@ -228,6 +230,88 @@ function reportView(result){
         verifiedSessions: verifiedSessions
     };
 
+    // Create export button
+    const exportDiv = document.createElement('div');
+    exportDiv.id = 'exportContainer';
+    exportDiv.className = 'mb-3 d-flex justify-content-between';
+    
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'btn btn-success';
+    exportBtn.textContent = 'Export to CSV';
+
+    const reportLabel = document.createElement('h3');
+    reportLabel.className = 'me-3 fw-bold';
+
+    result.forEach(data => {
+
+        let deptName = '';
+            switch(dept){
+                case 'COAM':
+                    deptName = 'CAMS';
+                    break;
+                case 'COLA':
+                    deptName = 'CAS';
+                    break;
+                case 'COCS':
+                    deptName = 'CCS';
+                    break;
+                case 'COCJ':
+                    deptName = 'CCJ';
+                case 'COE':
+                    deptName = 'CE';
+                default:
+                    deptName = dept;
+            }
+
+        if(filterRange === 'currCutOff'){
+
+            if (filterType === 'deptName_all') {
+                reportLabel.textContent = `Current Cut-off Report as of ${timeFormat.current_cutoff_start} to ${timeFormat.current_cutoff_end} for All Departments`;
+                fileName = `CURRENT_CUT-OFF_REPORT_${timeFormat.current_cutoff_start}_TO_${timeFormat.current_cutoff_end}_ALL_DEPARTMENTS.csv`;
+            }else if(filterType === 'byName'){
+                reportLabel.textContent = `Current Cut-off Report as of ${timeFormat.current_cutoff_start} to ${timeFormat.current_cutoff_end} for ${data.prof_name}`;
+                fileName = `CURRENT_CUT-OFF_REPORT_${timeFormat.current_cutoff_start}_TO_${timeFormat.current_cutoff_end}_${data.prof_name.replace(/[,]/g, '_').toUpperCase()}.csv`;
+            }else if(filterType === 'byDept'){
+                reportLabel.textContent = `Current Cut-off Report as of ${timeFormat.current_cutoff_start} to ${timeFormat.current_cutoff_end} for ${deptName}`;
+                fileName = `CURRENT_CUT-OFF_REPORT_${timeFormat.current_cutoff_start}_TO_${timeFormat.current_cutoff_end}_${deptName}.csv`;
+            }
+        };
+
+        if(filterRange === 'prevCutOff'){
+
+            if (filterType === 'deptName_all') {
+                reportLabel.textContent = `Previous Cut-off Report as of ${timeFormat.prev_cutoff_start} to ${timeFormat.prev_cutoff_end} for All Departments`;
+                fileName = `PREVIOUS_CUT-OFF_REPORT_${timeFormat.prev_cutoff_start}_TO_${timeFormat.prev_cutoff_end}_ALL_DEPARTMENTS.csv`;
+            }else if(filterType === 'byName'){
+                reportLabel.textContent = `Previous Cut-off Report as of ${timeFormat.prev_cutoff_start} to ${timeFormat.prev_cutoff_end} for ${data.prof_name}`;
+                fileName = `PREVIOUS_CUT-OFF_REPORT_${timeFormat.prev_cutoff_start}_TO_${timeFormat.prev_cutoff_end}_${data.prof_name.replace(/[,]/g, '_').toUpperCase()}.csv`;
+            }else if(filterType === 'byDept'){
+                reportLabel.textContent = `Previous Cut-off Report as of ${timeFormat.prev_cutoff_start} to ${timeFormat.prev_cutoff_end} for ${deptName}`;
+                fileName = `PREVIOUS_CUT-OFF_REPORT_${timeFormat.prev_cutoff_start}_TO_${timeFormat.prev_cutoff_end}_${deptName}.csv`;
+            }
+        }
+
+        if(filterRange === 'date'){
+
+            if (filterType === 'deptName_all') {
+                reportLabel.textContent = `Report as of ${date.startDate} to ${date.endDate} for All Departments`;
+                fileName = `REPORT_${date.startDate}_TO_${date.endDate}_ALL_DEPARTMENTS.csv`;
+            }else if(filterType === 'byName'){
+                reportLabel.textContent = `Report as of ${date.startDate} to ${date.endDate} for ${data.prof_name}`;
+                fileName = `REPORT_${date.startDate}_TO_${date.endDate}_${data.prof_name.replace(/[,]/g, '_').toUpperCase()}.csv`;
+            }else if(filterType === 'byDept'){
+                reportLabel.textContent = `Report as of ${date.startDate} to ${date.endDate} for ${deptName}`;
+                fileName = `REPORT_${date.startDate}_TO_${date.endDate}_${deptName}.csv`;
+            }
+        }
+    })
+
+    
+    exportBtn.addEventListener('click', () => exportTableToCSV('reportTable', fileName));
+    exportDiv.appendChild(reportLabel);
+    exportDiv.appendChild(exportBtn);
+    reportCard.appendChild(exportDiv);
+
     // Create report summary
     const summaryDiv = document.createElement('div');
     summaryDiv.id = 'reportSummary';
@@ -261,19 +345,6 @@ function reportView(result){
         </div>
     `;
     reportCard.appendChild(summaryDiv);
-
-    // Create export button
-    const exportDiv = document.createElement('div');
-    exportDiv.id = 'exportContainer';
-    exportDiv.className = 'mb-3';
-    
-    const exportBtn = document.createElement('button');
-    exportBtn.className = 'btn btn-success';
-    exportBtn.textContent = 'Export to CSV';
-    exportBtn.addEventListener('click', () => exportTableToCSV('reportTable', 'tadi_report.csv'));
-    
-    exportDiv.appendChild(exportBtn);
-    reportCard.appendChild(exportDiv);
 
     // Create teacher cards
     Object.entries(teacherGroups).sort().forEach(([profId, teacher]) => {
