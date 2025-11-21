@@ -36,20 +36,20 @@
             </div>
 
             <div class="col-md dept-select hide">
-                <select class="form-select shadow">
-                    <option value="cams">College of Allied Medical Science</option>
-                    <option value="cas">College of Arts and Sciences</option>
-                    <option value="ccs">College of Computer Science</option>
-                    <option value="ccj">College of Criminal Justice</option>
-                    <option value="ce">College of Engineering</option>
-                    <option value="coa">College of Accountancy</option>
-                    <option value="cobm">College of Business Management</option>
-                    <option value="coed">College of Education</option>
+                <select class="form-select shadow" id="deptSelect">
+                    <option value="COAM">College of Allied Medicine</option>
+                    <option value="COLA">College of Liberal Arts</option>
+                    <option value="COCS">College of Computer Science</option>
+                    <option value="COCJ">College of Criminal Justice</option>
+                    <option value="COE">College of Engineering</option>
+                    <option value="COA">College of Accountancy</option>
+                    <option value="COBM">College of Business Management</option>
+                    <option value="COED">College of Education</option>
                 </select>
             </div>
 
             <div class="col-md text-end">
-                <button id="generateBtn" class="btn px-4 shadow btn-secondary text-white gen-rep">
+                <button id="generateBtn" class="btn px-4 shadow btn-secondary text-white gen-rep" disabled>
                     Generate Report
                 </button>   
             </div>
