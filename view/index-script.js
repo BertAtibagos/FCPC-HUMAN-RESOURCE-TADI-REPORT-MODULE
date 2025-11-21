@@ -29,7 +29,4 @@ document.getElementById('byAllNameDept').addEventListener('change', (e)=>{
     }
 })
 
-totalStats();
-fetchMonthlyTotal();
-fetchPerCutOffTotal();
-fetchDeptTotal();
+dashBoardContent();
