@@ -29,4 +29,15 @@ document.getElementById('byAllNameDept').addEventListener('change', (e)=>{
     }
 })
 
+document.getElementById('filterMode').addEventListener('change', (e)=>{
+    const selectValue = e.target.value;
+
+    if(selectValue == 'summary'){
+        document.getElementById('byAllNameDept').classList.add('hide');
+        document.querySelector('.dept-select').classList.remove('hide');
+    }else{
+        document.getElementById('byAllNameDept').classList.remove('hide');
+        document.querySelector('.dept-select').classList.add('hide');
+    }
+});
 dashBoardContent();
