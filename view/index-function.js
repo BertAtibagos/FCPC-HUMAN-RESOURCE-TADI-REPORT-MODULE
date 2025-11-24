@@ -56,10 +56,89 @@ async function dashBoardContent(){
 }
 
 document.getElementById('generateBtn').addEventListener("click", (e)=>{
-    genReport();
+    const filterMode = document.getElementById('filterMode').value;
+    if(filterMode == 'detailed'){
+        detailedGenReport();
+    }else{
+        summaryGenReport();
+    }
 });
 
-async function genReport(){
+async function summaryGenReport(){
+    const byDateOrByCutOff = document.getElementById('perCutoffByDate').value;
+
+    let filterRange = '';
+    let dateRange = {startDate: '', endDate: ''};
+    let dept = '';
+
+    const params = new URLSearchParams({
+        type: "GET_INSTRUCTOR_LIST_DEPT_SUMMARY"
+    });
+
+    if(byDateOrByCutOff == 'date'){
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+
+        filterRange = 'date';
+        dateRange.startDate = startDate;
+        dateRange.endDate = endDate;
+
+        const deptSelect = document.getElementById('deptSelect').value;
+        params.append('rangeType', 'byDate');
+        params.append('filterType', 'dept_Search');
+        params.append('startDate', startDate);
+        params.append('endDate', endDate);
+        params.append('dept', deptSelect);
+        dept = deptSelect;
+    }
+    
+    if(byDateOrByCutOff == 'currCutOff'){
+
+        filterRange = 'currCutOff';
+
+        const deptSelect = document.getElementById('deptSelect').value;
+        params.append('rangeType', 'currCutOff');
+        params.append('filterType', 'dept_Search');
+        params.append('dept', deptSelect);
+        dept = deptSelect;
+    }
+    
+    if(byDateOrByCutOff == 'prevCutOff'){
+
+        filterRange = 'prevCutOff';
+        
+        const deptSelect = document.getElementById('deptSelect').value;
+        params.append('rangeType', 'prevCutOff');
+        params.append('filterType', 'dept_Search');
+        params.append('dept', deptSelect);
+        dept = deptSelect;
+    }
+
+    const reportCard = document.getElementById('reportView');
+    const srchBtn = document.getElementById('generateBtn');
+    srchBtn.disabled = true;
+    reportCard.innerHTML = loadingRow();
+
+    try{
+        
+        const request = await fetch(`controller/index-post.php`, {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: params
+        });
+
+        const result = await request.json();
+        summaryReportView(result, filterRange, dateRange, dept);
+        
+    }
+    catch(error){
+         console.log("ERROR: ", error);
+         srchBtn.disabled = false;
+         document.getElementById('reportView').innerHTML = '<div class="alert alert-danger">Error loading report. Please try again.</div>';
+    }
+}
+
+async function detailedGenReport(){
     const byDateOrByCutOff = document.getElementById('perCutoffByDate').value;
     const byAllOrByNameDept = document.getElementById('byAllNameDept').value;
 
@@ -167,7 +246,7 @@ async function genReport(){
         });
 
         const result = await request.json();
-        reportView(result, filterRange, dateRange, dept, filterType);
+        detailedReportView(result, filterRange, dateRange, dept, filterType);
         
     }
     catch(error){
