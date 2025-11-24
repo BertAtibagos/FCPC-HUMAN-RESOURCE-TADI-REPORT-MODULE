@@ -165,7 +165,7 @@ function vertBarChartPerDeptBuilder(result){
     });
 }
 
-function reportView(result, filterRange, date, dept, filterType){
+function detailedReportView(result, filterRange, date, dept, filterType){
     const reportCard = document.getElementById('reportView'); 
     const srchBtn = document.getElementById('generateBtn');
     srchBtn.disabled = false;
@@ -317,7 +317,7 @@ function reportView(result, filterRange, date, dept, filterType){
     summaryDiv.id = 'reportSummary';
     summaryDiv.innerHTML = `
         <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header card-header-summary text-white">
                 <h5 class="mb-0">Report Summary</h5>
             </div>
             <div class="card-body">
@@ -363,7 +363,7 @@ function reportView(result, filterRange, date, dept, filterType){
                     <div class="mb-4" ${idx > 0 ? 'style="border-top: 1px solid #dee2e6; padding-top: 1rem;"' : ''}>
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="mb-0"><strong>${subject.subject_code}</strong> - ${subject.subject_desc}</h6>
-                            <span class="badge bg-primary">${subject.section_name || 'No Section'}</span>
+                            <span class="badge badge-bg">${subject.section_name || 'No Section'}</span>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-sm table-bordered table-hover">
@@ -452,6 +452,275 @@ function reportView(result, filterRange, date, dept, filterType){
                 `;
                 tbody.appendChild(row);
             });
+        });
+    });
+    hiddenTable.appendChild(tbody);
+    reportCard.appendChild(hiddenTable);
+}
+
+function summaryReportView(result, filterRange, date, dept){
+    const reportCard = document.getElementById('reportView'); 
+    const srchBtn = document.getElementById('generateBtn');
+    srchBtn.disabled = false;
+    reportCard.innerHTML = '';
+    const timeFormat = getCutoffDates();
+    let fileName = '';
+
+    // Clear existing report content if any
+    let reportTable = document.getElementById('reportTable');
+    if(reportTable) reportTable.remove();
+    let exportContainer = document.getElementById('exportContainer');
+    if(exportContainer) exportContainer.remove();
+    let reportSummary = document.getElementById('reportSummary');
+    if(reportSummary) reportSummary.remove();
+
+    // Group instructors by department
+    const deptGroups = {};
+    let totalInstructors = 0;
+    let totalVerified = 0;
+    let totalUnverified = 0;
+    let totalRecords = 0;
+
+    result.forEach(data => {
+        const deptName = data.dept_code;
+
+        let deptInitial = '';
+            switch(deptName){
+                case 'COAM':
+                    deptInitial = 'CAMS';
+                    break;
+                case 'COLA':
+                    deptInitial = 'CAS';
+                    break;
+                case 'COCS':
+                    deptInitial = 'CCS';
+                    break;
+                case 'COCJ':
+                    deptInitial = 'CCJ';
+                case 'COE':
+                    deptInitial = 'CE';
+                default:
+                    deptInitial = deptName;
+            }
+        
+        if (!deptGroups[deptInitial]) {
+            deptGroups[deptInitial] = {
+                department: deptInitial,
+                instructors: []
+            };
+        }
+
+        deptGroups[deptInitial].instructors.push({
+            prof_name: data.prof_name,
+            verified_count: data.verified_count,
+            unverified_count: data.unverified_count,
+            total_count: data.total_count
+        });
+
+        totalInstructors++;
+        totalVerified += parseInt(data.verified_count) || 0;
+        totalUnverified += parseInt(data.unverified_count) || 0;
+        totalRecords += parseInt(data.total_count) || 0;
+    });
+
+    const stats = {
+        totalInstructors: totalInstructors,
+        totalVerified: totalVerified,
+        totalUnverified: totalUnverified,
+        totalRecords: totalRecords
+    };
+
+    // Create export button
+    const exportDiv = document.createElement('div');
+    exportDiv.id = 'exportContainer';
+    exportDiv.className = 'mb-3 d-flex justify-content-between';
+    
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'btn btn-success';
+    exportBtn.textContent = 'Export to CSV';
+
+    const reportLabel = document.createElement('h3');
+    reportLabel.className = 'me-3 fw-bold';
+
+     let deptName = '';
+            switch(dept){
+                case 'COAM':
+                    deptName = 'College of Allied Medicine';
+                    break;
+                case 'COLA':
+                    deptName = 'College of Arts and Sciences';
+                    break;
+                case 'COCS':
+                    deptName = 'College of Computer Studies';
+                    break;
+                case 'COCJ':
+                    deptName = 'College of Criminal Justice';
+                    break;
+                case 'COE':
+                    deptName = 'College of Engeneering';
+                    break;
+                case 'COED':
+                    deptName = 'College of Education';
+                    break;
+                case 'COA':
+                    deptName = 'College of Accountancy';
+                    break;
+                case 'COBM':
+                    deptName = 'College of Business Management';
+                    break;
+                default:
+                    deptName = "Unknown Department";
+            }
+
+
+    if(filterRange === 'currCutOff'){
+        reportLabel.textContent = `Current Cut-off Instructor Summary ${timeFormat.current_cutoff_start} to ${timeFormat.current_cutoff_end} for ${deptName}`;
+        fileName = `INSTRUCTOR_SUMMARY_${timeFormat.current_cutoff_start}_TO_${timeFormat.current_cutoff_end}_${deptName}.csv`;
+    }
+
+    if(filterRange === 'prevCutOff'){
+        reportLabel.textContent = `Previous Cut-off Instructor Summary  ${timeFormat.prev_cutoff_start} to ${timeFormat.prev_cutoff_end} for ${deptName}`;
+        fileName = `INSTRUCTOR_SUMMARY_${timeFormat.prev_cutoff_start}_TO_${timeFormat.prev_cutoff_end}_${deptName}.csv`;
+    }
+
+    if(filterRange === 'date'){
+        reportLabel.textContent = `Instructor Summary Report  ${date.startDate} to ${date.endDate} for ${deptName}`;
+        fileName = `INSTRUCTOR_SUMMARY_${date.startDate}_TO_${date.endDate}_${deptName}.csv`;
+    }
+
+    exportBtn.addEventListener('click', () => exportTableToCSV('reportTable', fileName));
+    exportDiv.appendChild(reportLabel);
+    exportDiv.appendChild(exportBtn);
+    reportCard.appendChild(exportDiv);
+
+    // Create report summary
+    const summaryDiv = document.createElement('div');
+    summaryDiv.id = 'reportSummary';
+    summaryDiv.innerHTML = `
+        <div class="card mb-4">
+            <div class="card-header card-header-summary text-white">
+                <h5 class="mb-0">Summary Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="border rounded p-3 text-center">
+                            <h6>Total Instructors</h6>
+                            <h3>${stats.totalInstructors}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3 text-center" style="background-color: #9bbdff70;">
+                            <h6>Total Verified</h6>
+                            <h3>${stats.totalVerified}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3 text-center" style="background-color: #ff970670;">
+                            <h6>Total Unverified</h6>
+                            <h3>${stats.totalUnverified}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3 text-center" style="background-color: #c9c9c970;">
+                            <h6>Total Records</h6>
+                            <h3>${stats.totalRecords}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    reportCard.appendChild(summaryDiv);
+
+    // Create department cards with instructor tables
+    Object.entries(deptGroups).sort().forEach(([deptInitial, dept]) => {
+        const deptCard = document.createElement('div');
+        deptCard.className = 'card mb-4';
+        
+        const deptTotal = dept.instructors.reduce((sum, instr) => sum + parseInt(instr.total_count), 0);
+        
+        deptCard.innerHTML = `
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">${deptInitial}</h5>
+                <span class="badge bg-light text-dark">${dept.instructors.length} instructors</span>
+            </div> 
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Instructor Name</th>
+                                <th class="text-center" style="background-color: #9bbdff70;">Verified</th>
+                                <th class="text-center" style="background-color: #ff970678;">Unverified</th>
+                                <th class="text-center">Total</th>
+                                <th class="text-center">Verification Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${dept.instructors.map(instr => {
+                                const total = parseInt(instr.total_count) || 0;
+                                const verified = parseInt(instr.verified_count) || 0;
+                                const rate = total > 0 ? ((verified / total) * 100).toFixed(2) : 0;
+                                return `
+                                    <tr>
+                                        <td>${instr.prof_name}</td>
+                                        <td class="text-center"><strong>${instr.verified_count}</strong></td>
+                                        <td class="text-center"><strong>${instr.unverified_count}</strong></td>
+                                        <td class="text-center"><strong>${instr.total_count}</strong></td>
+                                        <td class="text-center">
+                                            <span class="badge ${instr.verified_count == 0 && instr.unverified_count == 0 && instr.total_count == 0 ? 'bg-secondary' 
+                                                                : rate >= 80 ? 'bg-success' : rate >= 50 ? 'bg-warning' : 'bg-danger'}">
+                                                ${rate}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        reportCard.appendChild(deptCard);
+    });
+
+    // Add hidden table for CSV export
+    const hiddenTable = document.createElement('table');
+    hiddenTable.id = 'reportTable';
+    hiddenTable.style.display = 'none';
+    
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    headerRow.innerHTML = `
+        <th>Department</th>
+        <th>Instructor Name</th>
+        <th>Verified</th>
+        <th>Unverified</th>
+        <th>Total</th>
+        <th>Verification Rate</th>
+    `;
+    thead.appendChild(headerRow);
+    hiddenTable.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    Object.values(deptGroups).forEach(dept => {
+        dept.instructors.forEach(instr => {
+            const total = parseInt(instr.total_count) || 0;
+            const verified = parseInt(instr.verified_count) || 0;
+            const rate = total > 0 ? ((verified / total) * 100).toFixed(2) : 0;
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${dept.department}</td>
+                <td>${instr.prof_name}</td>
+                <td>${instr.verified_count}</td>
+                <td>${instr.unverified_count}</td>
+                <td>${instr.total_count}</td>
+                <td>${rate}%</td>
+            `;
+            tbody.appendChild(row);
         });
     });
     hiddenTable.appendChild(tbody);
