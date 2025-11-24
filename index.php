@@ -5,9 +5,16 @@
 <body>
 
     <div class="card-filter mb-3 p-3">
-        <div class="row g-3 align-items-end">
+        <div class="row g-3 align-items-end flex-wrap">
 
-            <div class="col-md">
+            <div class="col-auto">
+                <select class="form-select shadow" id="filterMode">
+                    <option value="detailed">Detailed</option>
+                    <option value="summary">Summary</option>
+                </select>
+            </div>
+
+            <div class="col-auto">
                 <select class="form-select shadow" id="perCutoffByDate">
                     <option value="currCutOff">Current cut off</option>
                     <option value="prevCutOff">Previous cut off</option>
@@ -15,15 +22,15 @@
                 </select>
             </div>
 
-            <div class="col-md date-search hide">
+            <div class="col-auto date-search hide">
                 <input type="date" class="form-control shadow" id="startDate">
             </div>
 
-            <div class="col-md date-search hide">
+            <div class="col-auto date-search hide">
                 <input type="date" class="form-control shadow" id="endDate">
             </div>
 
-            <div class="col-md">
+            <div class="col-auto">
                 <select class="form-select shadow" id="byAllNameDept">
                     <option value="all">All</option>
                     <option value="byName">By Name</option>
@@ -31,11 +38,11 @@
                 </select>
             </div>
 
-            <div class="col-md name-search hide">
+            <div class="col-auto name-search hide">
                 <input type="text" class="form-control shadow" placeholder="Name" id="nameSearch">
             </div>
 
-            <div class="col-md dept-select hide">
+            <div class="col-auto dept-select hide">
                 <select class="form-select shadow" id="deptSelect">
                     <option value="COAM">College of Allied Medicine</option>
                     <option value="COLA">College of Liberal Arts</option>
@@ -48,7 +55,7 @@
                 </select>
             </div>
 
-            <div class="col-md text-end">
+            <div class="col-auto">
                 <button id="generateBtn" class="btn px-4 shadow btn-secondary text-white gen-rep" disabled>
                     Generate Report
                 </button>   
