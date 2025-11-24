@@ -45,3 +45,9 @@
     align-items: center;
     justify-content: center;
 }
+.card-header-summary{
+    background-color: #032a74;
+}
+.badge-bg{
+    background-color: #415B8B;
+}
