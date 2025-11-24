@@ -312,5 +312,162 @@ if($type == 'GET_TADI_DETAILS_BY_CUTOFF'){
     $dbPortal->close();
 }
 
+if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
+
+    $rangeType = $_POST['rangeType'];
+
+    $queryFilter = "";
+    $bind = "";
+
+    if($rangeType == 'byDate'){
+        
+        $startDate = $_POST['startDate'];
+        $endDate = $_POST['endDate'];
+        $dept = $_POST['dept'];
+
+        $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
+        AND `schl_dept`.`SchlDept_CODE` = ?";
+        
+        $values = [$startDate, $endDate, $dept, $startDate, $endDate, $dept, $startDate, $endDate, $dept, $dept];
+        $bind = "ssssssssss";
+    }
+
+     // Calculate current and previous cut-off dates
+    $today = date('Y-m-d');
+    $current_day = date('d');
+    $current_month = date('m');
+    $current_year = date('Y');
+
+    // Determine current cut-off period
+    if ($current_day <= 15) {
+        $current_cutoff_start = date('Y-m-01');
+        $current_cutoff_end = date('Y-m-15');
+        
+        // Previous cut-off is 16-end of previous month
+        $prev_month = date('Y-m-d', strtotime('-1 month', strtotime($current_month . '-01')));
+        $prev_cutoff_start = date('Y-m-16', strtotime($prev_month));
+        $prev_cutoff_end = date('Y-m-t', strtotime($prev_month));
+    } else {
+        $current_cutoff_start = date('Y-m-16');
+        $current_cutoff_end = date('Y-m-t');
+        
+        // Previous cut-off is 1-15 of current month
+        $prev_cutoff_start = date('Y-m-01');
+        $prev_cutoff_end = date('Y-m-15');
+    }
+
+    if($rangeType == 'currCutOff'){
+        $date_start = $current_cutoff_start;
+        $date_end = $current_cutoff_end;
+        
+        $dept = $_POST['dept'];
+
+        $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
+        AND `schl_dept`.`SchlDept_CODE` = ?";
+        
+        $values = [$date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $dept];
+        $bind = "ssssssssss";
+    }
+
+    if($rangeType == 'prevCutOff'){
+        $date_start = $prev_cutoff_start;
+        $date_end = $prev_cutoff_end;
+
+        $dept = $_POST['dept'];
+
+        $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
+        AND `schl_dept`.`SchlDept_CODE` = ?";
+
+        $values = [$date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $dept];
+        $bind = "ssssssssss";
+    }
+
+    $qry = "SELECT DISTINCT 
+            schl_dept.`SchlDept_CODE` dept_code,
+            CONCAT(
+                emp.SchlEmp_LNAME,
+                ', ',
+                emp.SchlEmp_FNAME,
+                ' ',
+                emp.SchlEmp_MNAME
+            ) AS prof_name,
+            (SELECT 
+                COUNT(*) 
+            FROM
+                schooltadi st 
+                INNER JOIN schoolenrollmentsubjectoffered seso 
+                ON st.schlenrollsubjoff_id = seso.SchlEnrollSubjOffSms_ID 
+                LEFT JOIN `schoolacademiccourses` `schl_acad_crses` 
+                ON `seso`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID` 
+                LEFT JOIN `schooldepartment` `schl_dept` 
+                ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID` 
+            WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID` 
+                AND st.schltadi_status = 1
+                AND seso.SchlAcadLvl_ID = 2 
+                AND seso.SchlAcadYr_ID = 19 
+                AND seso.SchlAcadPrd_ID = 5 
+                $queryFilter ) AS verified_count,
+            (SELECT 
+                COUNT(*) 
+            FROM
+                schooltadi st 
+                INNER JOIN schoolenrollmentsubjectoffered seso 
+                ON st.schlenrollsubjoff_id = seso.SchlEnrollSubjOffSms_ID 
+                LEFT JOIN `schoolacademiccourses` `schl_acad_crses` 
+                ON `seso`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID` 
+                LEFT JOIN `schooldepartment` `schl_dept` 
+                ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID` 
+            WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID` 
+                AND st.schltadi_status = 0 
+                AND seso.SchlAcadLvl_ID = 2 
+                AND seso.SchlAcadYr_ID = 19 
+                AND seso.SchlAcadPrd_ID = 5 
+                $queryFilter ) AS unverified_count,
+            (SELECT 
+                COUNT(*) 
+            FROM
+                schooltadi st 
+                INNER JOIN schoolenrollmentsubjectoffered seso 
+                ON st.schlenrollsubjoff_id = seso.SchlEnrollSubjOffSms_ID 
+                LEFT JOIN `schoolacademiccourses` `schl_acad_crses` 
+                ON `seso`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID` 
+                LEFT JOIN `schooldepartment` `schl_dept` 
+                ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID` 
+            WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID` 
+                AND seso.SchlAcadLvl_ID = 2 
+                AND seso.SchlAcadYr_ID = 19 
+                AND seso.SchlAcadPrd_ID = 5 
+                $queryFilter ) AS total_count 
+            FROM
+            `schoolenrollmentsubjectoffered` `schl_enr_subj_off` 
+            LEFT JOIN `schoolacademiccourses` `schl_acad_crses` 
+                ON `schl_enr_subj_off`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID` 
+            LEFT JOIN `schooldepartment` `schl_dept` 
+                ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID` 
+            LEFT JOIN schoolemployee AS emp 
+                ON `schl_enr_subj_off`.`SchlProf_ID` = emp.`SchlEmpSms_ID` 
+            WHERE `schl_enr_subj_off`.`SchlAcadLvl_ID` = 2 
+            AND `schl_enr_subj_off`.`SchlAcadYr_ID` = 19 
+            AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = 5 
+            AND `schl_dept`.`SchlDept_CODE` = ?
+            AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1 
+            AND emp.`SchlEmp_ID` IS NOT NULL 
+            GROUP BY `schl_enr_subj_off`.`SchlProf_ID`,
+            emp.SchlEmp_LNAME,
+            emp.SchlEmp_FNAME,
+            emp.SchlEmp_MNAME 
+            ORDER BY prof_name ASC 
+            ";
+
+    $stmt = $dbPortal->prepare($qry);
+    $stmt->bind_param($bind, ...$values);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $fetch = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    $dbPortal->close();
+}
+
+
 echo json_encode($fetch);
 ?>
