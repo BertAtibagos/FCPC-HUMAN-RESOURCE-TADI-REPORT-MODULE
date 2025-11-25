@@ -1,4 +1,5 @@
 async function dashBoardContent(){
+
     try{
 
         const totalStatsRequest = await fetch(`controller/index-post.php`,{
@@ -51,7 +52,9 @@ async function dashBoardContent(){
 
     }
     catch(error){
-        console.log("ERROR: ", error)
+        document.getElementById('reportView').innerHTML = '<div class="alert alert-danger" style="text-align: center">Error loading Dashboard. Please log in again.</div>';
+        srchBtn.disabled = false;
+        console.log("ERROR: ", error);
     }
 }
 
@@ -155,6 +158,21 @@ async function detailedGenReport(){
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
 
+        if (!startDate || !endDate) {
+            alert('Please select both start and end dates.');
+            document.getElementById('startDate').classList.add('is-invalid');
+            document.getElementById('endDate').classList.add('is-invalid');
+            return;
+        }else if (startDate > endDate) {
+            alert('Start date cannot be later than end date.');
+            document.getElementById('startDate').classList.add('is-invalid');
+            document.getElementById('endDate').classList.add('is-invalid');
+            return;
+        }else{
+            document.getElementById('startDate').classList.remove('is-invalid');
+            document.getElementById('endDate').classList.remove('is-invalid');
+        }
+
         filterRange = 'date';
         dateRange.startDate = startDate;
         dateRange.endDate = endDate;
@@ -167,6 +185,14 @@ async function detailedGenReport(){
             filterType = 'deptName_all';
         }else if(byAllOrByNameDept == 'byName'){
             const nameSearch = document.getElementById('nameSearch').value;
+
+            if(!nameSearch){
+                document.getElementById('nameSearch').classList.add('is-invalid');
+                alert("Please enter a name to search.");
+                return;
+            }else{
+                document.getElementById('nameSearch').classList.remove('is-invalid');
+            }
             params.append('rangeType', 'byDate');
             params.append('filterType', 'name_Search');
             params.append('startDate', startDate);
@@ -195,6 +221,15 @@ async function detailedGenReport(){
             filterType = 'deptName_all';
         }else if(byAllOrByNameDept == 'byName'){
             const nameSearch = document.getElementById('nameSearch').value;
+
+            if(!nameSearch){
+                document.getElementById('nameSearch').classList.add('is-invalid');
+                alert("Please enter a name to search.");
+                return;
+            }else{
+                document.getElementById('nameSearch').classList.remove('is-invalid');
+            }
+
             params.append('rangeType', 'currCutOff');
             params.append('filterType', 'name_Search');
             params.append('name', nameSearch);
@@ -218,6 +253,15 @@ async function detailedGenReport(){
             filterType = 'deptName_all';
         }else if(byAllOrByNameDept == 'byName'){
             const nameSearch = document.getElementById('nameSearch').value;
+
+            if(!nameSearch){
+                document.getElementById('nameSearch').classList.add('is-invalid');
+                alert("Please enter a name to search.");
+                return;
+            }else{
+                document.getElementById('nameSearch').classList.remove('is-invalid');
+            }
+
             params.append('rangeType', 'prevCutOff');
             params.append('filterType', 'name_Search');
             params.append('name', nameSearch);
