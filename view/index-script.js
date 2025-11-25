@@ -34,6 +34,7 @@ document.getElementById('filterMode').addEventListener('change', (e)=>{
 
     if(selectValue == 'summary'){
         document.getElementById('byAllNameDept').classList.add('hide');
+        document.querySelector('.name-search').classList.add('hide');
         document.querySelector('.dept-select').classList.remove('hide');
     }else{
         document.getElementById('byAllNameDept').classList.remove('hide');
