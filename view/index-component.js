@@ -166,6 +166,15 @@ function vertBarChartPerDeptBuilder(result){
 }
 
 function detailedReportView(result, filterRange, date, dept, filterType){
+
+    if(!Array.isArray(result) || result.length === 0){
+        const reportCard = document.getElementById('reportView'); 
+        const srchBtn = document.getElementById('generateBtn');
+        srchBtn.disabled = false;
+        reportCard.innerHTML = '<div class="alert alert-warning" role="alert">No records found for the selected criteria.</div>';
+        return;
+    }
+
     const reportCard = document.getElementById('reportView'); 
     const srchBtn = document.getElementById('generateBtn');
     srchBtn.disabled = false;
@@ -369,14 +378,14 @@ function detailedReportView(result, filterRange, date, dept, filterType){
                             <table class="table table-sm table-bordered table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Time In</th>
-                                        <th>Time Out</th>
-                                        <th>Duration</th>
-                                        <th>Mode</th>
-                                        <th>Type</th>
+                                        <th class="col-1">Date</th>
+                                        <th class="col-1">Time In</th>
+                                        <th class="col-1">Time Out</th>
+                                        <th class="col-1">Duration</th>
+                                        <th class="col-1">Mode</th>
+                                        <th class="col-1">Type</th>
                                         <th>Activity</th>
-                                        <th>Status</th>
+                                        <th class="col-1">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -386,10 +395,10 @@ function detailedReportView(result, filterRange, date, dept, filterType){
                                             <td>${session.time_in}</td>
                                             <td>${session.time_out}</td>
                                             <td>${session.duration}</td>
-                                            <td>${session.mode}</td>
-                                            <td>${session.type || '-'}</td>
+                                            <td>${session.mode == 'online learning' ? 'Online' : 'Onsite'}</td>
+                                            <td>${session.type == 'regular' ? 'Regular' : 'Make-up'}</td>
                                             <td>${session.activity || '-'}</td>
-                                            <td>
+                                            <td style="text-align: center;">
                                                 <span class="badge ${session.status == 1 ? 'bg-success' : 'bg-warning'}">
                                                     ${session.status == 1 ? 'Verified' : 'Unverified'}
                                                 </span>
@@ -459,6 +468,16 @@ function detailedReportView(result, filterRange, date, dept, filterType){
 }
 
 function summaryReportView(result, filterRange, date, dept){
+
+    if(!Array.isArray(result) || result.length === 0){
+        const reportCard = document.getElementById('reportView'); 
+        const srchBtn = document.getElementById('generateBtn');
+        srchBtn.disabled = false;
+        reportCard.innerHTML = '<div class="alert alert-warning" role="alert">No records found for the selected criteria.</div>';
+        return;
+    }
+
+
     const reportCard = document.getElementById('reportView'); 
     const srchBtn = document.getElementById('generateBtn');
     srchBtn.disabled = false;
