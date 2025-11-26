@@ -46,7 +46,7 @@
                 <select class="form-select shadow" id="deptSelect">
                     <option value="COAM">College of Allied Medicine</option>
                     <option value="COLA">College of Liberal Arts</option>
-                    <option value="COCS">College of Computer Science</option>
+                    <option value="COCS">College of Computer Studies</option>
                     <option value="COCJ">College of Criminal Justice</option>
                     <option value="COE">College of Engineering</option>
                     <option value="COA">College of Accountancy</option>
