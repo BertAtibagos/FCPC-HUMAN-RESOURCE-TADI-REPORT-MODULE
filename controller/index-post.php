@@ -189,9 +189,11 @@ if($type == 'GET_TADI_DETAILS_BY_CUTOFF'){
         $current_cutoff_end = date('Y-m-15');
         
         // Previous cut-off is 16-end of previous month
-        $prev_month = date('Y-m-d', strtotime('-1 month', strtotime($current_month . '-01')));
-        $prev_cutoff_start = date('Y-m-16', strtotime($prev_month));
-        $prev_cutoff_end = date('Y-m-t', strtotime($prev_month));
+        $prev_month_start = new DateTime($current_year . '-' . $current_month . '-01');
+        $prev_month_start->modify('-1 month');
+        $prev_month_str = $prev_month_start->format('Y-m');
+        $prev_cutoff_start = $prev_month_str . '-16';
+        $prev_cutoff_end = $prev_month_str . '-' . $prev_month_start->format('t');
     } else {
         $current_cutoff_start = date('Y-m-16');
         $current_cutoff_end = date('Y-m-t');
@@ -315,22 +317,11 @@ if($type == 'GET_TADI_DETAILS_BY_CUTOFF'){
 if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
 
     $rangeType = $_POST['rangeType'];
+    $dept = $_POST['dept'];
 
     $queryFilter = "";
     $bind = "";
-
-    if($rangeType == 'byDate'){
-        
-        $startDate = $_POST['startDate'];
-        $endDate = $_POST['endDate'];
-        $dept = $_POST['dept'];
-
-        $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
-        AND `schl_dept`.`SchlDept_CODE` = ?";
-        
-        $values = [$startDate, $endDate, $dept, $startDate, $endDate, $dept, $startDate, $endDate, $dept, $dept];
-        $bind = "ssssssssss";
-    }
+    $values = [];
 
      // Calculate current and previous cut-off dates
     $today = date('Y-m-d');
@@ -344,9 +335,11 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
         $current_cutoff_end = date('Y-m-15');
         
         // Previous cut-off is 16-end of previous month
-        $prev_month = date('Y-m-d', strtotime('-1 month', strtotime($current_month . '-01')));
-        $prev_cutoff_start = date('Y-m-16', strtotime($prev_month));
-        $prev_cutoff_end = date('Y-m-t', strtotime($prev_month));
+        $prev_month_start = new DateTime($current_year . '-' . $current_month . '-01');
+        $prev_month_start->modify('-1 month');
+        $prev_month_str = $prev_month_start->format('Y-m');
+        $prev_cutoff_start = $prev_month_str . '-16';
+        $prev_cutoff_end = $prev_month_str . '-' . $prev_month_start->format('t');
     } else {
         $current_cutoff_start = date('Y-m-16');
         $current_cutoff_end = date('Y-m-t');
@@ -356,12 +349,21 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
         $prev_cutoff_end = date('Y-m-15');
     }
 
+    if($rangeType == 'byDate'){
+        $startDate = $_POST['startDate'];
+        $endDate = $_POST['endDate'];
+        
+        $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
+        AND `schl_dept`.`SchlDept_CODE` = ?";
+        
+        $values = [$startDate, $endDate, $dept, $startDate, $endDate, $dept, $startDate, $endDate, $dept, $dept];
+        $bind = "ssssssssss";
+    }
+
     if($rangeType == 'currCutOff'){
         $date_start = $current_cutoff_start;
         $date_end = $current_cutoff_end;
         
-        $dept = $_POST['dept'];
-
         $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
         AND `schl_dept`.`SchlDept_CODE` = ?";
         
@@ -372,8 +374,6 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
     if($rangeType == 'prevCutOff'){
         $date_start = $prev_cutoff_start;
         $date_end = $prev_cutoff_end;
-
-        $dept = $_POST['dept'];
 
         $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
         AND `schl_dept`.`SchlDept_CODE` = ?";
