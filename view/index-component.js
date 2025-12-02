@@ -199,6 +199,8 @@ function detailedReportView(result, filterRange, date, dept, filterType){
     result.forEach(data => {
         const profId = data.prof_name || 'Unknown';
         const subjectKey = data.subject_code || 'Unknown';
+        const sectionKey = data.section_name || 'No Section';
+        const combinedSubjectKey = `${subjectKey}_${sectionKey}`;
 
         if (!teacherGroups[profId]) {
             teacherGroups[profId] = {
@@ -208,8 +210,8 @@ function detailedReportView(result, filterRange, date, dept, filterType){
             totalTeachers++;
         }
 
-        if (!teacherGroups[profId].subjects[subjectKey]) {
-            teacherGroups[profId].subjects[subjectKey] = {
+        if (!teacherGroups[profId].subjects[combinedSubjectKey]) {
+            teacherGroups[profId].subjects[combinedSubjectKey] = {
                 subject_code: data.subject_code,
                 subject_desc: data.subject_desc,
                 section_name: data.section_name,
@@ -217,7 +219,7 @@ function detailedReportView(result, filterRange, date, dept, filterType){
             };
         }
 
-        teacherGroups[profId].subjects[subjectKey].sessions.push({
+        teacherGroups[profId].subjects[combinedSubjectKey].sessions.push({
             date: data.tadi_date,
             time_in: formatTime(data.time_in),
             time_out: formatTime(data.time_out),
