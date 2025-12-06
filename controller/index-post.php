@@ -353,110 +353,63 @@ if($type == 'GET_INSTRUCTOR_LIST_DEPT_SUMMARY'){
         $startDate = $_POST['startDate'];
         $endDate = $_POST['endDate'];
         
-        $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
-        AND `schl_dept`.`SchlDept_CODE` = ?";
-        
-        $values = [$startDate, $endDate, $dept, $startDate, $endDate, $dept, $startDate, $endDate, $dept, $dept];
-        $bind = "ssssssssss";
+        $values = [$startDate, $endDate, $dept];
+        $bind = "sss";
     }
 
     if($rangeType == 'currCutOff'){
         $date_start = $current_cutoff_start;
         $date_end = $current_cutoff_end;
         
-        $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
-        AND `schl_dept`.`SchlDept_CODE` = ?";
-        
-        $values = [$date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $dept];
-        $bind = "ssssssssss";
+        $values = [$date_start, $date_end, $dept];
+        $bind = "sss";
     }
 
     if($rangeType == 'prevCutOff'){
         $date_start = $prev_cutoff_start;
         $date_end = $prev_cutoff_end;
 
-        $queryFilter = "AND st.schltadi_date BETWEEN ? AND ?
-        AND `schl_dept`.`SchlDept_CODE` = ?";
-
-        $values = [$date_start, $date_end, $dept, $date_start, $date_end, $dept, $date_start, $date_end, $dept, $dept];
-        $bind = "ssssssssss";
+        $values = [$date_start, $date_end, $dept];
+        $bind = "sss";
     }
 
-    $qry = "SELECT DISTINCT 
-            schl_dept.`SchlDept_CODE` dept_code,
-            CONCAT(
+    $qry = "SELECT 
+                schl_dept.SchlDept_CODE AS dept_code,
+                CONCAT(emp.SchlEmp_LNAME, ', ', emp.SchlEmp_FNAME, ' ', emp.SchlEmp_MNAME) AS prof_name,
+
+                COUNT(CASE WHEN st.schltadi_status = 1 THEN 1 END) AS verified_count,
+
+                COUNT(CASE WHEN st.schltadi_status = 0 THEN 1 END) AS unverified_count,
+
+                COUNT(st.schltadi_id) AS total_count
+
+            FROM schoolenrollmentsubjectoffered AS seso
+            LEFT JOIN schoolacademiccourses AS schl_acad_crses
+                ON seso.SchlAcadCrses_ID = schl_acad_crses.SchlAcadCrseSms_ID
+            LEFT JOIN schooldepartment AS schl_dept
+                ON schl_acad_crses.SchlDept_ID = schl_dept.SchlDeptSms_ID
+            LEFT JOIN schoolemployee AS emp
+                ON seso.SchlProf_ID = emp.SchlEmpSms_ID
+
+            LEFT JOIN schooltadi AS st
+                ON st.schlenrollsubjoff_id = seso.SchlEnrollSubjOffSms_ID
+                AND st.schltadi_date BETWEEN ? AND ?
+
+            WHERE 
+                seso.SchlAcadLvl_ID = 2
+                AND seso.SchlAcadYr_ID = 19
+                AND seso.SchlAcadPrd_ID = 5
+                AND schl_dept.SchlDept_CODE = ?
+                AND seso.SchlEnrollSubjOff_ISACTIVE = 1
+                AND emp.SchlEmp_ID IS NOT NULL
+
+            GROUP BY 
+                seso.SchlProf_ID,
                 emp.SchlEmp_LNAME,
-                ', ',
                 emp.SchlEmp_FNAME,
-                ' ',
                 emp.SchlEmp_MNAME
-            ) AS prof_name,
-            (SELECT 
-                COUNT(*) 
-            FROM
-                schooltadi st 
-                INNER JOIN schoolenrollmentsubjectoffered seso 
-                ON st.schlenrollsubjoff_id = seso.SchlEnrollSubjOffSms_ID 
-                LEFT JOIN `schoolacademiccourses` `schl_acad_crses` 
-                ON `seso`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID` 
-                LEFT JOIN `schooldepartment` `schl_dept` 
-                ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID` 
-            WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID` 
-                AND st.schltadi_status = 1
-                AND seso.SchlAcadLvl_ID = 2 
-                AND seso.SchlAcadYr_ID = 19 
-                AND seso.SchlAcadPrd_ID = 5 
-                $queryFilter ) AS verified_count,
-            (SELECT 
-                COUNT(*) 
-            FROM
-                schooltadi st 
-                INNER JOIN schoolenrollmentsubjectoffered seso 
-                ON st.schlenrollsubjoff_id = seso.SchlEnrollSubjOffSms_ID 
-                LEFT JOIN `schoolacademiccourses` `schl_acad_crses` 
-                ON `seso`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID` 
-                LEFT JOIN `schooldepartment` `schl_dept` 
-                ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID` 
-            WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID` 
-                AND st.schltadi_status = 0 
-                AND seso.SchlAcadLvl_ID = 2 
-                AND seso.SchlAcadYr_ID = 19 
-                AND seso.SchlAcadPrd_ID = 5 
-                $queryFilter ) AS unverified_count,
-            (SELECT 
-                COUNT(*) 
-            FROM
-                schooltadi st 
-                INNER JOIN schoolenrollmentsubjectoffered seso 
-                ON st.schlenrollsubjoff_id = seso.SchlEnrollSubjOffSms_ID 
-                LEFT JOIN `schoolacademiccourses` `schl_acad_crses` 
-                ON `seso`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID` 
-                LEFT JOIN `schooldepartment` `schl_dept` 
-                ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID` 
-            WHERE st.SchlProf_ID = `schl_enr_subj_off`.`SchlProf_ID` 
-                AND seso.SchlAcadLvl_ID = 2 
-                AND seso.SchlAcadYr_ID = 19 
-                AND seso.SchlAcadPrd_ID = 5 
-                $queryFilter ) AS total_count 
-            FROM
-            `schoolenrollmentsubjectoffered` `schl_enr_subj_off` 
-            LEFT JOIN `schoolacademiccourses` `schl_acad_crses` 
-                ON `schl_enr_subj_off`.`SchlAcadCrses_ID` = `schl_acad_crses`.`SchlAcadCrseSms_ID` 
-            LEFT JOIN `schooldepartment` `schl_dept` 
-                ON `schl_acad_crses`.`SchlDept_ID` = `schl_dept`.`SchlDeptSms_ID` 
-            LEFT JOIN schoolemployee AS emp 
-                ON `schl_enr_subj_off`.`SchlProf_ID` = emp.`SchlEmpSms_ID` 
-            WHERE `schl_enr_subj_off`.`SchlAcadLvl_ID` = 2 
-            AND `schl_enr_subj_off`.`SchlAcadYr_ID` = 19 
-            AND `schl_enr_subj_off`.`SchlAcadPrd_ID` = 5 
-            AND `schl_dept`.`SchlDept_CODE` = ?
-            AND `schl_enr_subj_off`.`SchlEnrollSubjOff_ISACTIVE` = 1 
-            AND emp.`SchlEmp_ID` IS NOT NULL 
-            GROUP BY `schl_enr_subj_off`.`SchlProf_ID`,
-            emp.SchlEmp_LNAME,
-            emp.SchlEmp_FNAME,
-            emp.SchlEmp_MNAME 
-            ORDER BY prof_name ASC 
+
+            ORDER BY prof_name ASC
             ";
 
     $stmt = $dbPortal->prepare($qry);
